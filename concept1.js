@@ -50,3 +50,4 @@ const result2 = product(6,3);
 console.log(result1);
 
 console.log(result2);
+
