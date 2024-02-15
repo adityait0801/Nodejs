@@ -1,5 +1,6 @@
 const express = require('express')
 const fs = require('fs')
+const { stringify } = require('querystring')
 
 const app = express()
 app.use(express.text())
@@ -85,6 +86,42 @@ app.get("/reading", (req, res)=> {
         res.send(parsed_data.instructors);
     })
 })
+
+app.post("/creating", (req, res)=> {
+    const new_lecture = req.body; //to recive the data what client is sending.
+    console.log(new_lecture);       
+    // to store data into the file we have to stringify the data 
+    fs.writeFile("./db.json",JSON.stringify(new_lecture), "utf-8", (err)=> {
+        if(err) 
+        {
+            return res.send("Something went wrong");
+        } 
+            console.log("data written successfully");
+        })
+    res.send("Work in Progress");
+})
+// the above code will overwrite/replaced all the data in json file
+
+
+app.post("/updating", (req, res)=> {
+    const new_lecture = req.body; //to recive the data what client is sending.
+    console.log(new_lecture);       
+    fs.readFile("./db.json", "utf-8", (err, data)=> {
+        if(err)
+        {
+            return res.send("Something went wrong");
+        } 
+       let parsed_data = JSON.parse(data);
+       let lectures = parsed_data.lectures;
+        lectures.push(new_lecture);
+        let new_data = JSON.stringify(parsed_data);
+        fs.writeFile("./db.json", new_data, "utf-8", (err)=>{
+            res.send("data uploaded successfully");
+        })
+    })
+    res.send("Work in Progress");
+})
+
 
 app.listen(8000, () => {
     console.log("listening on port 8000")
