@@ -75,6 +75,17 @@ app.get("/headers", (req, res)=> {
     res.send("Headers - additional information from server");
 })
 
+app.get("/reading", (req, res)=> {
+    fs.readFile("./db.json", "utf-8", (err, data)=> {
+        if(err)
+        {
+            return res.send("Something went wrong");
+        } 
+       const parsed_data = JSON.parse(data);
+        res.send(parsed_data.instructors);
+    })
+})
+
 app.listen(8000, () => {
     console.log("listening on port 8000")
     })
