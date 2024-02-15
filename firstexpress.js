@@ -30,7 +30,13 @@ app.get("/posts", (req, res)=> {
     })
 })
 
+app.get("/welcome", (req, res)=> {
+    console.log(req.query);
+    const user = req.query.name || "user";
+    res.send("Welcome"+" "+user )
+})
+
 
 app.listen(8000, () => {
-    console.log("listening pn port 8000")
+    console.log("listening on port 8000")
     })
