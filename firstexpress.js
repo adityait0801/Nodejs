@@ -55,10 +55,25 @@ app.get("/details", (req, res)=> {
 
 app.get("/lecture/:id", (req,res)=> {
     console.log(req.params);
-    const number = req.params.id;
-    res.send("Lecture"+" "+number);
+    const lecture_id = req.params.id;
+    res.send("Lecture notes for"+" "+lecture_id);
 })
 
+app.get("/posts", (req, res)=> {
+    fs.readFile("./posts.json", "utf-8", (err, posts)=>{
+        if(err)
+        {
+            return res.status(500).send(err);
+        }
+        res.status(200).send(posts);
+    })
+})
+
+app.get("/headers", (req, res)=> {
+    console.log(req.headers);
+    res.setHeader("Server", "local Server");
+    res.send("Headers - additional information from server");
+})
 
 app.listen(8000, () => {
     console.log("listening on port 8000")
