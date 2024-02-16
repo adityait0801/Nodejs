@@ -1,24 +1,25 @@
 const express = require('express')
 const fs = require('fs')
+const cors = require('cors')
 
 const app = express()
 
-const timer= (req, res, next) => {
+app.use(cors({
+    origin : "*",
+}));
+
+const gatekeeper = (req, res, next) => {
     if(req.method==="POST")
     {
         res.send("Not Found");
     }
     else
     {
-    const startTime = new Date().getTime();
     next();
-    const endTime = new Date().getTime();
-    console.log(req.method+" "+req.url)
-    console.log(endTime - startTime);
     }
 }
 
-app.use(timer);
+app.use(gatekeeper);
 
 app.get("/", (req, res)=> {
     res.send("This the home page");
