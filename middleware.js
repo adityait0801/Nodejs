@@ -4,11 +4,18 @@ const fs = require('fs')
 const app = express()
 
 const timer= (req, res, next) => {
+    if(req.method==="POST")
+    {
+        res.send("Not Found");
+    }
+    else
+    {
     const startTime = new Date().getTime();
     next();
     const endTime = new Date().getTime();
     console.log(req.method+" "+req.url)
     console.log(endTime - startTime);
+    }
 }
 
 app.use(timer);
@@ -18,7 +25,7 @@ app.get("/", (req, res)=> {
 })
 
 app.get("/details", (req, res)=> {
-    fs.readFile("./posts", "utf-8", (err, data)=>{
+    fs.readFile("./db.json", "utf-8", (err, data)=>{
         if(err)
         {
             return res.status(500).send(err);
