@@ -5,24 +5,20 @@ const jwt = require('jsonwebtoken');
 
 const app = express()
 
-const authentication = (res, req, next)=> {
-    const {token} = req.query;
-    if(!token)
-        {
-        res.send("Login first");
+const authentication = (req, res, next) => {
+    const { token } = req.query;
+    if (!token) {
+        return res.status(401).send("Login first");
+    }
+    jwt.verify(token, 'shhhhh', function(err, decoded) {
+        if (err) {
+             return res.status(401).send("Please Login again");
+        } else {
+            next();
         }
-        jwt.verify(token, 'shhhhh', function(err, decoded) {
-            if(err)
-            {
-                res.send(err);
-                res.send("you can read secret details");
-            }
-            else
-            {
-                next();
-            }
-          });
+    });
 }
+
 
 app.use(express.json())
 
@@ -34,7 +30,6 @@ app.get('/users', authentication, async (req, res)=> {
     const users = await Authmodel.find();
     res.send(users);
 })
-
 app.post('/signup', async (req, res)=> {
     const { email, password} = req.body;
     const new_user = new Authmodel ({
@@ -44,7 +39,6 @@ app.post('/signup', async (req, res)=> {
     await new_user.save();
     res.send({msg : "user inserted successfully", new_user});
 })
-
 app.post('/login', async (req, res)=> {
     const  {email, password} = req.body;
     const user = await Authmodel.findOne({email,password}); //find will give array of object where as findOne will give either 1 or null object.
@@ -64,7 +58,6 @@ app.post('/login', async (req, res)=> {
 app.get('/reports', authentication, async (req, res)=> {
     res.send("Here are the reports");
 })
-
 
 app.listen(7000, async()=> {
     try{
