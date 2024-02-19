@@ -5,13 +5,32 @@ const jwt = require('jsonwebtoken');
 
 const app = express()
 
+const authentication = (res, req, next)=> {
+    const {token} = req.query;
+    if(!token)
+        {
+        res.send("Login first");
+        }
+        jwt.verify(token, 'shhhhh', function(err, decoded) {
+            if(err)
+            {
+                res.send(err);
+                res.send("you can read secret details");
+            }
+            else
+            {
+                next();
+            }
+          });
+}
+
 app.use(express.json())
 
 app.get('/', (req,res)=> {
     res.send('this is base route');
 })
 
-app.get('/users', async (req, res)=> {
+app.get('/users', authentication, async (req, res)=> {
     const users = await Authmodel.find();
     res.send(users);
 })
@@ -42,41 +61,8 @@ app.post('/login', async (req, res)=> {
     }
 })
 
-app.get('/reports', async (req, res)=> {
-    const {token} = req.query;
-    if(!token)
-        {
-        res.send("Login first");
-        }
-//The 1st way of verifying      
-    // else{
-    //     //here we are verifying the secret
-    //     const decoded = jwt.verify(token, 'shhhhh');
-    //     //if the token is correct we will get the decoded object
-    //     //if the toekn is wrong we will get an error
-    //     console.log(decoded);
-    //     if(token==decoded)
-    //     {
-    //     res.send("you can read secret details");
-    //     }
-    //     else{
-    //         res.send("please login again");
-    //     }
-    // }
-//The 2nd way of verifying 
-jwt.verify(token, 'shhhhh', function(err, decoded) {
-    if(err)
-    {
-        res.send(err);
-        res.send("you can read secret details");
-    }
-    else
-    {
-        console.log(decoded);
-        res.send("you can read secret details");
-    }
-    //The above code was written for only one endpoint i.e. /reports
-  });
+app.get('/reports', authentication, async (req, res)=> {
+    res.send("Here are the reports");
 })
 
 
