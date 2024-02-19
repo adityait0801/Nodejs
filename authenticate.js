@@ -1,6 +1,7 @@
 const express = require('express')
 const { Authmodel } = require('./models/Authenticate.model');
 const { connection } = require('./authmongoose');
+const jwt = require('jsonwebtoken');
 
 const app = express()
 
@@ -32,9 +33,12 @@ app.post('/login', async (req, res)=> {
     {
         res.send({"message" : "login failed, invalid credentials"})
     }
-    else
+    else    
     {
-        res.send({"message" : "login successfull", "token": "12345"})
+        //here we are generating token, instead of random string we are using jwt library to generate the token
+        const token = jwt.sign({}, 'shhhhh');
+        //                         this is the secret code
+        res.send({"message" : "login successfull", "token": token})
     }
 })
 
@@ -44,15 +48,34 @@ app.get('/reports', async (req, res)=> {
         {
         res.send("Login first");
         }
-    else{
-        if(token=="12345")
-        {
+//The 1st way of verifying      
+    // else{
+    //     //here we are verifying the secret
+    //     const decoded = jwt.verify(token, 'shhhhh');
+    //     //if the token is correct we will get the decoded object
+    //     //if the toekn is wrong we will get an error
+    //     console.log(decoded);
+    //     if(token==decoded)
+    //     {
+    //     res.send("you can read secret details");
+    //     }
+    //     else{
+    //         res.send("please login again");
+    //     }
+    // }
+//The 2nd way of verifying 
+jwt.verify(token, 'shhhhh', function(err, decoded) {
+    if(err)
+    {
+        res.send(err);
         res.send("you can read secret details");
-        }
-        else{
-            res.send("please login again");
-        }
     }
+    else
+    {
+        console.log(decoded);
+        res.send("you can read secret details");
+    }
+  });
 })
 
 
