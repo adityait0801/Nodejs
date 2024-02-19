@@ -34,9 +34,27 @@ app.post('/login', async (req, res)=> {
     }
     else
     {
-        res.send({"message" : "login successfull"})
+        res.send({"message" : "login successfull", "token": "12345"})
     }
 })
+
+app.get('/reports', async (req, res)=> {
+    const {token} = req.query;
+    if(!token)
+        {
+        res.send("Login first");
+        }
+    else{
+        if(token=="12345")
+        {
+        res.send("you can read secret details");
+        }
+        else{
+            res.send("please login again");
+        }
+    }
+})
+
 
 app.listen(7000, async()=> {
     try{
