@@ -75,6 +75,7 @@ jwt.verify(token, 'shhhhh', function(err, decoded) {
         console.log(decoded);
         res.send("you can read secret details");
     }
+    //The above code was written for only one endpoint i.e. /reports
   });
 })
 
