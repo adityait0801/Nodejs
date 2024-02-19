@@ -6,7 +6,8 @@ const jwt = require('jsonwebtoken');
 const app = express()
 
 const authentication = (req, res, next) => {
-    const { token } = req.query;
+    const token = req.headers.authorization?.split(" ")[1];
+    //Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MDgzNzQ0MzB9.VSJAY7y36COK5FylxaUoydIEk0BpsnxgFMUaFc8TE8w
     if (!token) {
         return res.status(401).send("Login first");
     }
