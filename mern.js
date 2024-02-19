@@ -1,7 +1,10 @@
 const express = require('express')
-const {connection, User_model} = require('./mongoose')
+const connection = require('./mongoose')
+const User_model = require('./models/User.model')
 
 const app = express();
+
+app.use(express.json())
 
 app.get('/', (req, res)=> {
     res.send("api working, base route");
@@ -9,7 +12,7 @@ app.get('/', (req, res)=> {
 
 app.get('/users', async (req, res)=> {
     const users = await User_model.find({});
-    res.send("users");
+    res.send(users);
 })
 
 app.post('/users', async (req, res)=> {
@@ -28,7 +31,7 @@ app.post('/users', async (req, res)=> {
     res.send({msg : "user inserted successfully", new_user});
 })
 
-app.listen(8000, async()=> {
+app.listen(8600, async()=> {
     try{
     await connection
     console.log("Connected to MongoDB Successfully");
@@ -38,5 +41,5 @@ app.listen(8000, async()=> {
         console.log(err);
         console.log("Error Connecting to DB");
     }
-    console.log("listening on port 8000");
+    console.log("listening on port 8600");
 })
