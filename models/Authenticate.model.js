@@ -3,7 +3,7 @@ const mongoose = require('mongoose')
 const authSchema =  mongoose.Schema({
     email : String, 
     password : String,
-    role : {type : String ,enum : ['customer', 'maintainer'], default : "customer"}
+    role : {type : String , default : "customer", enum : ['customer', 'maintainer']}
 })
 
 const Authmodel = mongoose.model("user", authSchema)

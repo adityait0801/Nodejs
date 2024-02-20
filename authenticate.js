@@ -43,7 +43,7 @@ app.get('/contact', authentication, async (req, res)=> {
 
     if(role==="customer")
     {
-        res.send("Here is teh contact info");
+        res.send("Here is the contact info");
     }
     else
     {
@@ -52,16 +52,28 @@ app.get('/contact', authentication, async (req, res)=> {
 })
 
 app.get('/users', authentication, async (req, res)=> {
-    const users = await Authmodel.find();
-    res.send(users);
+    const token = req.headers.authorization?.split(" ")[1];
+    const dec = jwt.verify(token,'shhhhh');
+    const user_id = dec.user_id;
+    const user = await Authmodel.findOne({_id: user_id}); // Change find to findOne and pass the query object
+    const role = user.role;
+
+    if(role==="maintainer") {
+        const users = await Authmodel.find();
+        res.send(users);
+    } else {
+        res.status(401).send("Not Authorized");
+    }
 })
+
 app.post('/signup', async (req, res)=> {
-    const { email, password} = req.body;
+    const { email, password, role} = req.body;
     //Here we are generating the hashing of pw
     bcrypt.hash(password, 8, async (err, hash) => {
         const new_user = new Authmodel ({
         email,
-        password : hash
+        password : hash,
+        role
         // because in Schema we have defined pw as a key value pair.
     })
     await new_user.save();
