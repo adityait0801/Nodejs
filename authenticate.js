@@ -2,6 +2,7 @@ const express = require('express')
 const { Authmodel } = require('./models/Authenticate.model');
 const { connection } = require('./authmongoose');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs')
 
 const app = express()
 
@@ -33,26 +34,43 @@ app.get('/users', authentication, async (req, res)=> {
 })
 app.post('/signup', async (req, res)=> {
     const { email, password} = req.body;
-    const new_user = new Authmodel ({
+    //Here we are generating the hashing of pw
+    bcrypt.hash(password, 8, async (err, hash) => {
+        const new_user = new Authmodel ({
         email,
-        password 
+        password : hash
+        // because in Schema we have defined pw as a key value pair.
     })
     await new_user.save();
     res.send({msg : "user inserted successfully", new_user});
+    });
 })
 app.post('/login', async (req, res)=> {
     const  {email, password} = req.body;
-    const user = await Authmodel.findOne({email,password}); //find will give array of object where as findOne will give either 1 or null object.
+    const user = await Authmodel.findOne({email}); //find will give array of object where as findOne will give either 1 or null object.
+    //we found the user with respect to email
+    //then w.r.to email we will get the hashed pw
     if(!user)
     {
         res.send({"message" : "login failed, invalid credentials"})
     }
     else    
     {
-        //here we are generating token, instead of random string we are using jwt library to generate the token
-        const token = jwt.sign({}, 'shhhhh');
-        //                         this is the secret code
-        res.send({"message" : "login successfull", "token": token})
+        const hashed_password = user.password;
+        bcrypt.compare(password, hashed_password, (err, result) => {
+            //password is the plain text pw which we are getting from user, hashd pw is the pw whcih is saved in the DB when the user has signed up.
+            if(result)
+            {
+                 //here we are generating token, instead of random string we are using jwt library to generate the token
+                const token = jwt.sign({}, 'shhhhh');
+                //                         this is the secret code
+                res.send({"message" : "login successfull", "token": token});
+            }    
+            else
+                {
+                    res.send({"message" : "login failed, invalid credentials"})
+                }
+        });
     }
 })
 
