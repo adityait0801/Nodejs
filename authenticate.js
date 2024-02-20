@@ -22,10 +22,33 @@ const authentication = (req, res, next) => {
 }
 
 
+
 app.use(express.json())
 
 app.get('/', (req,res)=> {
     res.send('this is base route');
+})
+
+app.get('/contact', authentication, async (req, res)=> {
+    //will the user send email & password ? "No"
+    //token ? "Yes"
+    const token = req.headers.authorization?.split(" ")[1];
+    //by using token we can find the user in DB ? "No"
+    //but by using token we can find the the user's ID ? "Yes"
+    //because when we are doing login we are giving payload user id by using the user object
+    var decoded = jwt.verify(token, 'shhhhh')
+    const user_id = decoded.user_id;
+    const user = await Auth.Authmodel.findOne({_id : user_id})
+    const role = user.role;
+
+    if(role==="customer")
+    {
+        res.send("Here is teh contact info");
+    }
+    else
+    {
+         res.status(401).send("Not Authorized");
+    }
 })
 
 app.get('/users', authentication, async (req, res)=> {
@@ -62,8 +85,8 @@ app.post('/login', async (req, res)=> {
             if(result)
             {
                  //here we are generating token, instead of random string we are using jwt library to generate the token
-                const token = jwt.sign({}, 'shhhhh');
-                //                         this is the secret code
+                const token = jwt.sign({user_id :user._id}, 'shhhhh');
+                // while login we are giving payload user id by using the user object ,this is the secret code
                 res.send({"message" : "login successfull", "token": token});
             }    
             else
