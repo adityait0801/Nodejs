@@ -6,6 +6,8 @@ const bcrypt = require('bcryptjs')
 
 const app = express()
 
+app.use(express.json())
+
 const authentication = (req, res, next) => {
     const token = req.headers.authorization?.split(" ")[1];
     //Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3MDgzNzQ0MzB9.VSJAY7y36COK5FylxaUoydIEk0BpsnxgFMUaFc8TE8w
@@ -21,49 +23,29 @@ const authentication = (req, res, next) => {
     });
 }
 
-
-
-app.use(express.json())
-
-app.get('/', (req,res)=> {
-    res.send('this is base route');
-})
-
-app.get('/contact', authentication, async (req, res)=> {
-    //will the user send email & password ? "No"
-    //token ? "Yes"
-    const token = req.headers.authorization?.split(" ")[1];
-    //by using token we can find the user in DB ? "No"
-    //but by using token we can find the the user's ID ? "Yes"
-    //because when we are doing login we are giving payload user id by using the user object
-    var decoded = jwt.verify(token, 'shhhhh')
-    const user_id = decoded.user_id;
-    const user = await Auth.Authmodel.findOne({_id : user_id})
+const authorisation = async (req, res, next) => {
+    const token = req.headers.authorization.split(" ")[1];
+    const decode = jwt.verify( token, 'shhhhh')
+    const user_id = decode.user_id;
+    const user = await Authmodel.find({user_id});
     const role = user.role;
 
-    if(role==="customer")
+    if(role==="customer" && req.url==="/contact")
     {
-        res.send("Here is the contact info");
+        next();
+    }
+    else if(role==="maintainer" && req.url==="/users")
+    {
+        next();
     }
     else
     {
-         res.status(401).send("Not Authorized");
+        res.send("Not Authorized");
     }
-})
+}
 
-app.get('/users', authentication, async (req, res)=> {
-    const token = req.headers.authorization?.split(" ")[1];
-    const dec = jwt.verify(token,'shhhhh');
-    const user_id = dec.user_id;
-    const user = await Authmodel.findOne({_id: user_id}); // Change find to findOne and pass the query object
-    const role = user.role;
-
-    if(role==="maintainer") {
-        const users = await Authmodel.find();
-        res.send(users);
-    } else {
-        res.status(401).send("Not Authorized");
-    }
+app.get('/', (req,res)=> {
+    res.send('this is base route');
 })
 
 app.post('/signup', async (req, res)=> {
