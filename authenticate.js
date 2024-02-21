@@ -23,24 +23,22 @@ const authentication = (req, res, next) => {
     });
 }
 
-const authorisation = async (req, res, next) => {
+const authorisation = (permitted_role) => {
+    return async (req, res, next) => {
     const token = req.headers.authorization.split(" ")[1];
     const decode = jwt.verify( token, 'shhhhh')
     const user_id = decode.user_id;
     const user = await Authmodel.find({user_id});
     const role = user.role;
 
-    if(role==="customer" && req.url==="/contact")
-    {
-        next();
-    }
-    else if(role==="maintainer" && req.url==="/users")
-    {
-        next();
-    }
+    if(role===permitted_role)
+        {
+            next();
+        }
     else
-    {
-        res.send("Not Authorized");
+        {
+            res.send("Not Authorized");
+        }
     }
 }
 
@@ -91,12 +89,12 @@ app.post('/login', async (req, res)=> {
     }
 })
 
-app.get('/users', authentication, authorisation,async (req, res)=> {
+app.get('/users', authentication, authorisation("maintainer"),async (req, res)=> {
         const users = await Authmodel.find();
         res.send(users);
 })
 
-app.get('/reports', authentication, authorisation, async (req, res)=> {
+app.get('/reports', authentication, authorisation("customer"), async (req, res)=> {
     res.send("Here are the reports");
 })
 
