@@ -14,32 +14,33 @@ const authentication = (req, res, next) => {
     if (!token) {
         return res.status(401).send("Login first");
     }
-    jwt.verify(token, 'shhhhh', function(err, decoded) {
+    jwt.verify(token, 'shhhhh',  async function(err, decoded) {
         if (err) {
              return res.status(401).send("Please Login again");
         } else {
+            const user_id = decoded.user_id;
+            const user = await Authmodel.findOne({user_id});
+            userRole = user.role;
+            //In the below code we have modified the request and so we pass paased req beacuse req will come first at authentication and then authorisation
+            req.userRole = userRole;
             next();
         }
     });
 }
 
-const authorisation = (permitted_roles) => {
+const authorisation = (permittedRoles) => {
     return async (req, res, next) => {
-    const token = req.headers.authorization.split(" ")[1];
-    const decode = jwt.verify( token, 'shhhhh')
-    const user_id = decode.user_id;
-    const user = await Authmodel.find({user_id});
-    const user_role = user.role;
-
-    if(permitted_roles.include(user_role))
-        {
-            next();
+        // In the below we will recieve user role in the req object passed through authentication 
+        const userRole = req.userRole;
+        if(permittedRoles.include(userRole))
+            {
+                next();
+            }
+        else
+            {
+                res.send("Not Authorized");
+            }
         }
-    else
-        {
-            res.send("Not Authorized");
-        }
-    }
 }
 
 app.get('/', (req,res)=> {
@@ -73,7 +74,7 @@ app.post('/login', async (req, res)=> {
     {
         const hashed_password = user.password;
         bcrypt.compare(password, hashed_password, (err, result) => {
-            //password is the plain text pw which we are getting from user, hashd pw is the pw whcih is saved in the DB when the user has signed up.
+            //password is the plain text pw which we are getting from user, hashed pw is the pw whcih is saved in the DB when the user has signed up.
             if(result)
             {
                  //here we are generating token, instead of random string we are using jwt library to generate the token
