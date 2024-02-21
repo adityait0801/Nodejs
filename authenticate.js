@@ -91,7 +91,12 @@ app.post('/login', async (req, res)=> {
     }
 })
 
-app.get('/reports', authentication, async (req, res)=> {
+app.get('/users', authentication, authorisation,async (req, res)=> {
+        const users = await Authmodel.find();
+        res.send(users);
+})
+
+app.get('/reports', authentication, authorisation, async (req, res)=> {
     res.send("Here are the reports");
 })
 
