@@ -23,15 +23,15 @@ const authentication = (req, res, next) => {
     });
 }
 
-const authorisation = (permitted_role) => {
+const authorisation = (permitted_roles) => {
     return async (req, res, next) => {
     const token = req.headers.authorization.split(" ")[1];
     const decode = jwt.verify( token, 'shhhhh')
     const user_id = decode.user_id;
     const user = await Authmodel.find({user_id});
-    const role = user.role;
+    const user_role = user.role;
 
-    if(role===permitted_role)
+    if(permitted_roles.include(user_role))
         {
             next();
         }
@@ -89,12 +89,18 @@ app.post('/login', async (req, res)=> {
     }
 })
 
-app.get('/users', authentication, authorisation("maintainer"),async (req, res)=> {
+//single role authorization
+app.get('/contact', authentication, authorisation(["customer"]),async (req, res)=> {
+    res.send("Here is the contact info");
+})
+
+//single role authorization
+app.get('/users', authentication, authorisation(["maintainer"]),async (req, res)=> {
         const users = await Authmodel.find();
         res.send(users);
 })
-
-app.get('/reports', authentication, authorisation("customer"), async (req, res)=> {
+//Mutliple role authorisation
+app.get('/reports', authentication, authorisation(["customer","maintainer"]), async (req, res)=> {
     res.send("Here are the reports");
 })
 
